@@ -1,0 +1,25 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  row-gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.root button {
+  height: 2rem;
+}
+.root input {
+  margin-left: 1rem;
+}
+
+.root input[type="text"],
+.root input[type="number"] {
+  flex-grow: 1;
+}
+
+.root label {
+  display: flex;
+}

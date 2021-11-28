@@ -1407,6 +1407,11 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
+"@nearform/sql@~1.9.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@nearform/sql/-/sql-1.9.0.tgz#f33d07816427c1d69a08c7ed5655ea4700a17cc4"
+  integrity sha512-fSoRE4qbzZ1NQaOItOt1A8BUvXf9xEW5nNTk+po/55sIPfWKeLVPYVDAgv2I886ntlU83q/F815h+oXYNnteOA==
+
 "@nodelib/fs.scandir@2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.4.tgz#d4b3549a5db5de2683e0c1071ab4f140904bbf69"
@@ -9411,6 +9416,11 @@ requires-port@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/requires-port/-/requires-port-1.0.0.tgz#925d2601d39ac485e091cf0da5c6e694dc3dcaff"
   integrity sha1-kl0mAdOaxIXgkc8NpcbmlNw9yv8=
+
+rescript@^9.1.4:
+  version "9.1.4"
+  resolved "https://registry.yarnpkg.com/rescript/-/rescript-9.1.4.tgz#1eb126f98d6c16942c0bf0df67c050198e580515"
+  integrity sha512-aXANK4IqecJzdnDpJUsU6pxMViCR5ogAxzuqS0mOr8TloMnzAjJFu63fjD6LCkWrKAhlMkFFzQvVQYaAaVkFXw==
 
 resolve-cwd@^2.0.0:
   version "2.0.0"
