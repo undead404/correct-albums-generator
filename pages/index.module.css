@@ -1,0 +1,18 @@
+.root {
+  text-align: center;
+}
+
+.root textarea {
+  height: 50vh;
+  width: 1200px;
+}
+
+.header {
+  align-items: center;
+  background-color: #282c34;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  font-size: calc(10px + 2vmin);
+  justify-content: center;
+}
