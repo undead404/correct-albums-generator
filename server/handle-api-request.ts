@@ -6,7 +6,7 @@ import type * as T from 'io-ts';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import type { QueryResult } from 'pg';
 
-import { logInfo } from '../common/console';
+import { logError, logInfo } from '../common/console';
 
 function ensurePost(
   request: NextApiRequest,
@@ -76,6 +76,7 @@ export default function handleApiRequest<T1 extends T.Props, T2>(
       either.map(
         flow(
           process,
+          taskEither.mapLeft((error) => logError(error)()),
           taskEither.mapLeft((error) => [error]),
         ),
       ),

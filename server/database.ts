@@ -1,17 +1,21 @@
 import type { SqlStatement } from '@nearform/sql';
 import SQL from '@nearform/sql';
-import { flow } from 'fp-ts/lib/function';
+import { flow, pipe } from 'fp-ts/lib/function';
 import * as taskEither from 'fp-ts/TaskEither';
 import type { QueryResult } from 'pg';
 import { Client } from 'pg';
 
+import { logInfo } from '../common/console';
 import handleError from '../common/handle-error';
 import type { Album } from '../types';
 
 import logSql from './log-sql';
 
+const REQUIRED_NUMBER_OF_AFFECTED_ROWS = 1;
+
 function preFormat(text: string): string {
-  return text.replaceAll("'", "''");
+  // return text.replaceAll("'", "''");
+  return text;
 }
 
 const database = new Client({
@@ -34,7 +38,18 @@ function queryDatabase(
   query: SqlStatement,
 ): taskEither.TaskEither<Error, QueryResult> {
   // console.info(query.debug);
-  return taskEither.tryCatch(() => database.query(query), handleError);
+  return pipe(
+    taskEither.tryCatch(() => database.query(query), handleError),
+    taskEither.chain((result) => {
+      logInfo(result)();
+      return taskEither.of(result);
+    }),
+    taskEither.chain((result) =>
+      result.rowCount < REQUIRED_NUMBER_OF_AFFECTED_ROWS
+        ? taskEither.left(new Error('No rows affected'))
+        : taskEither.right(result),
+    ),
+  );
 }
 
 export const hideAlbum = flow(

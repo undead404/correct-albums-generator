@@ -1,17 +1,17 @@
 import type * as io from 'fp-ts/IO';
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function logError(message: any): io.IO<void> {
-  return (): void => {
+export function logError<T>(message: T): io.IO<T> {
+  return (): T => {
     // eslint-disable-next-line no-console
     console.error('ERROR', message);
+    return message;
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function logInfo(message: any): io.IO<void> {
-  return (): void => {
+export function logInfo<T>(message: T): io.IO<T> {
+  return (): T => {
     // eslint-disable-next-line no-console
     console.info('INFO', message);
+    return message;
   };
 }

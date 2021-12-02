@@ -1,9 +1,13 @@
-import axios from 'axios';
-import type { FormEventHandler } from 'react';
+import { pipe } from 'fp-ts/lib/function';
+import * as task from 'fp-ts/Task';
+import * as taskEither from 'fp-ts/TaskEither';
+import type { FormEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import type { Album } from '../../types';
+import correct from '../api/correct';
+import hide from '../api/hide';
 import useUserCheck from '../hooks/use-user-check';
 import useUserInput from '../hooks/use-user-input';
 
@@ -16,7 +20,6 @@ export type AlbumFormProperties = Readonly<{
 
 const NOT_FOUND_INDEX = -1;
 const START_INDEX = 0;
-const MAX_DATE_LENGTH = 10;
 
 const AlbumForm = function AlbumForm(): JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,76 +33,80 @@ const AlbumForm = function AlbumForm(): JSX.Element {
   const artistReference = useRef<HTMLInputElement>(null);
   const isToHideReference = useRef<HTMLInputElement>(null);
 
-  const handleSubmit: FormEventHandler = useCallback(
-    // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-    (event) => {
-      setIsLoading(true);
+  const handleHide = useCallback(
+    (event: FormEvent<HTMLFormElement>): void => {
       event.preventDefault();
-      if (isToHide) {
-        axios
-          .post('/api/hide', { artist, name })
-          // eslint-disable-next-line promise/always-return
-          .then(() => {
+      setIsLoading(true);
+      void pipe(
+        { artist, name },
+        hide,
+        // eslint-disable-next-line array-callback-return
+        taskEither.fold(
+          (error) => {
+            toast(error.message, {
+              type: 'error',
+            });
+            return task.of(null);
+          },
+          () => {
             toast(`${artist} – ${name}: hidden!`, { type: 'success' });
-            setIsLoading(false);
-          })
-          .catch((error) => {
-            toast(
-              error instanceof Error
-                ? error.message
-                : // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                  `${error || 'Unknown error'}`,
-              {
-                type: 'error',
-              },
-            );
-
-            setIsLoading(false);
-          });
-      } else {
-        axios
-          .post('/api/correct', {
-            artist,
-            date,
-            name,
-            numberOfTracks: Number.parseInt(numberOfTracks, 10),
-          })
-          // eslint-disable-next-line promise/always-return
-          .then(() => {
-            toast(`${artist} – ${name}: corrected!`, { type: 'success' });
-            setIsLoading(false);
-          })
-          .catch((error) => {
-            toast(
-              error instanceof Error
-                ? error.message
-                : // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                  `${error || 'Unknown error'}`,
-              {
-                type: 'error',
-              },
-            );
-            setIsLoading(false);
-          });
-      }
-      setArtist('');
-      setName('');
-      setNumberOfTracks('');
-      setDate('');
-      artistReference.current?.focus();
+            setArtist('');
+            setName('');
+            setNumberOfTracks('');
+            setDate('');
+            artistReference.current?.focus();
+            return task.of(null);
+          },
+        ),
+        // eslint-disable-next-line array-callback-return
+        task.map(() => {
+          setIsLoading(false);
+        }),
+      )();
     },
-    [
-      artist,
-      date,
-      isToHide,
-      name,
-      numberOfTracks,
-      setArtist,
-      setDate,
-      setName,
-      setNumberOfTracks,
-    ],
+    [artist, name],
   );
+
+  const handleCorrect = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      setIsLoading(true);
+      void pipe(
+        {
+          artist,
+          date,
+          name,
+          numberOfTracks: Number.parseInt(numberOfTracks, 10),
+        },
+        correct,
+        // eslint-disable-next-line array-callback-return
+        taskEither.fold(
+          (error) => {
+            toast(error.message, {
+              type: 'error',
+            });
+            return task.of(null);
+          },
+          () => {
+            toast(`${artist} – ${name}: corrected!`, { type: 'success' });
+            setArtist('');
+            setName('');
+            setNumberOfTracks('');
+            setDate('');
+            artistReference.current?.focus();
+            setIsLoading(false);
+            return task.of(null);
+          },
+        ),
+        // eslint-disable-next-line array-callback-return
+        task.map(() => {
+          setIsLoading(false);
+        }),
+      )();
+    },
+    [artist, date, name, numberOfTracks],
+  );
+
   useEffect(() => {
     if (artist.includes('	')) {
       const [artistValue, nameValue] = artist.split('	');
@@ -121,7 +128,10 @@ const AlbumForm = function AlbumForm(): JSX.Element {
   }, [artist, name, setArtist, setName]);
   const isValid = !!(artist && name && (isToHide || (numberOfTracks && date)));
   return (
-    <form className={styles.root} onSubmit={handleSubmit}>
+    <form
+      className={styles.root}
+      onSubmit={isToHide ? handleHide : handleCorrect}
+    >
       <h3>Input album</h3>
       <label htmlFor="artist-input">
         Artist
